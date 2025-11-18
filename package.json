@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-ai-agent-langfuse",
-  "version": "0.1.22",
+  "version": "0.1.25",
   "description": "n8n community node: AI Agent + Langfuse",
   "keywords": [
     "n8n-community-node-package",

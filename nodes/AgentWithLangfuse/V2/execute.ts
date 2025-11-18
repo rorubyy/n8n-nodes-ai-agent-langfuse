@@ -307,7 +307,7 @@ export async function toolsAgentExecute(
                 outputParser,
                 memory,
                 fallbackModel,
-                langfuseHandler
+                // langfuseHandler
             );
             // Invoke with fallback logic
             const invokeParams = {
