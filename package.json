@@ -57,6 +57,7 @@
     "@types/json-schema": "^7.0.15",
     "@types/lodash": "^4.17.20",
     "@types/proxy-from-env": "^1.0.4",
+    "@typescript-eslint/eslint-plugin": "~8.32.0",
     "@typescript-eslint/parser": "~8.32.0",
     "eslint": "^8.57.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",

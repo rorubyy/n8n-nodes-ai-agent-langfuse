@@ -18,6 +18,8 @@ module.exports = {
         extraFileExtensions: ['.json'],
     },
 
+    plugins: ['@typescript-eslint'],
+
     ignorePatterns: ['.eslintrc.js', '**/*.js', '**/node_modules/**', '**/dist/**'],
 
     overrides: [
