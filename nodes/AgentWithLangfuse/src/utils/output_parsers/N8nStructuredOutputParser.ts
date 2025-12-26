@@ -1,5 +1,5 @@
 import type { Callbacks } from '@langchain/core/callbacks/manager';
-import { StructuredOutputParser } from 'langchain/output_parsers';
+import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import get from 'lodash/get';
 import type { ISupplyDataFunctions } from 'n8n-workflow';
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
@@ -73,7 +73,7 @@ export class N8nStructuredOutputParser extends StructuredOutputParser<any> {
 					e.issues?.[0].code === 'invalid_type' &&
 					e.issues?.[0].path?.[0] === 'output' &&
 					e.issues?.[0].expected === 'object' &&
-					e.issues?.[0].received === 'undefined')
+					(e.issues?.[0] as any).received === 'undefined')
 			) {
 				nodeError.context.outputParserFailReason = 'Model output wrapper is an empty object';
 			} else if (e instanceof z.ZodError) {
@@ -100,7 +100,8 @@ export class N8nStructuredOutputParser extends StructuredOutputParser<any> {
 		nodeVersion: number,
 		context: ISupplyDataFunctions,
 	): Promise<N8nStructuredOutputParser> {
-		let returnSchema: z.ZodType<object, z.ZodTypeDef, object>;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		let returnSchema: any;
 		if (nodeVersion === 1) {
 			returnSchema = z.object({
 				[STRUCTURED_OUTPUT_KEY]: z
@@ -136,7 +137,7 @@ export class N8nStructuredOutputParser extends StructuredOutputParser<any> {
 			});
 		}
 
-		return new N8nStructuredOutputParser(context, returnSchema);
+		return new N8nStructuredOutputParser(context, returnSchema as any);
 	}
 
 	getSchema() {

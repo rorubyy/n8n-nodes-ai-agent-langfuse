@@ -1,6 +1,6 @@
 import type { DynamicStructuredToolInput } from '@langchain/core/tools';
 import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools';
-import { StructuredOutputParser } from 'langchain/output_parsers';
+import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import type { ISupplyDataFunctions, IDataObject } from 'n8n-workflow';
 import { jsonParse, NodeOperationError } from 'n8n-workflow';
 import type { ZodTypeAny } from 'zod';
@@ -16,7 +16,7 @@ const getSimplifiedType = (schema: ZodTypeAny) => {
     } else if (schema instanceof ZodBoolean) {
         return 'boolean';
     } else if (schema instanceof ZodNullable || schema instanceof ZodOptional) {
-        return getSimplifiedType(schema.unwrap());
+        return getSimplifiedType((schema as any).unwrap());
     }
 
     return 'string';
