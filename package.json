@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-ai-agent-langfuse",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "description": "n8n community node: AI Agent + Langfuse",
   "keywords": [
     "n8n-community-node-package",
@@ -69,5 +69,10 @@
   },
   "peerDependencies": {
     "n8n-workflow": "*"
+  },
+  "overrides": {
+    "langfuse-langchain": {
+      "langchain": "$langchain"
+    }
   }
 }

@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.27] - 2025-12-30
+
+### Fixed
+- **#12**: Fixed dependency conflict preventing installation in n8n
+  - Added npm `overrides` to resolve `langfuse-langchain` peer dependency conflict
+  - Users can now install the package in n8n Community Nodes without ERESOLVE errors
+  - Maintains compatibility with LangChain 1.x while using langfuse-langchain v3
+
+### Technical Details
+- The `langfuse-langchain@3.x` package requires `langchain <0.4.0` as a peer dependency
+- This package uses `langchain@1.x`, which would normally cause installation failures
+- Added `overrides` configuration in package.json to force correct dependency resolution
+- This approach allows the package to work in n8n's sandboxed environment without requiring environment variables
+
+---
+
 ## [0.1.26] - 2025-12-29
 
 ### Fixed
