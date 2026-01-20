@@ -40,8 +40,8 @@ export class AgentWithLangfuse implements INodeType {
 					${getInputs.toString()};
 					return getInputs(true, hasOutputParser, needsFallback);
 				})(
-					!!$parameter.hasOutputParser, 
-					!!$parameter.needsFallback   
+					!!$parameter.hasOutputParser,
+					!!$parameter.needsFallback
 					)
 			}}`,
 		outputs: ['main'],
@@ -160,6 +160,13 @@ export class AgentWithLangfuse implements INodeType {
 						type: 'string',
 						default: '',
 						description: 'Optional: for trace attribution (langfuse_user_id)',
+					},
+					{
+						displayName: 'Trace Name',
+						name: 'traceName',
+						type: 'string',
+						default: '',
+						description: 'Custom name for the trace in Langfuse. Supports expressions (e.g., {{ $json.clientName }})',
 					},
 				],
 			},

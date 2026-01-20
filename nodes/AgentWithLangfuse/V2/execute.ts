@@ -307,9 +307,15 @@ export async function toolsAgentExecute(
             }
 
             const langfuseMetadata = {
-                customMetadata: parsedCustomMetadata,
+                customMetadata: {
+                    ...(parsedCustomMetadata || {}),
+                    // Automatically track which agent/node executed this trace
+                    agentName: nodeName,
+                    agentNodeId: nodeId,
+                },
                 sessionId: rawMetadata.sessionId,
                 userId: rawMetadata.userId,
+                traceName: rawMetadata.traceName || 'AI Agent',
             };
 
             const langfuseHandler = new CallbackHandler({
@@ -354,6 +360,7 @@ export async function toolsAgentExecute(
             const executeOptions = {
                 signal: this.getExecutionCancelSignal(),
                 callbacks: [langfuseHandler],
+                runName: langfuseMetadata.traceName || 'AI Agent',
                 metadata: {
                     sessionId: langfuseMetadata.sessionId,
                     userId: langfuseMetadata.userId,

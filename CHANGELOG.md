@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.28] - 2026-01-20
+
+### Added
+- **Custom Trace Name Support**: Added `traceName` field to Langfuse Metadata configuration
+  - Users can now specify custom names for traces in Langfuse dashboard
+  - Supports n8n expressions for dynamic trace naming (e.g., `{{ $json.clientName }}`)
+  - Defaults to "AI Agent" if not provided
+  - Trace names are passed to Langfuse via `runName` option for better trace organization
+
+### Improved
+- Enhanced Langfuse integration with better trace identification
+  - Custom trace names improve observability and debugging in Langfuse dashboard
+  - Allows filtering and searching traces by meaningful names
+
+---
+
 ## [0.1.27] - 2025-12-30
 
 ### Fixed
