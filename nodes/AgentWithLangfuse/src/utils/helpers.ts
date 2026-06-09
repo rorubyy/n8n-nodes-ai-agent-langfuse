@@ -209,8 +209,8 @@ export const getConnectedTools = async (
         ((await ctx.getInputConnectionData('ai_tool', 0)) as Array<Toolkit | Tool>) ??
         []
     ).flatMap((toolOrToolkit) => {
-        if (toolOrToolkit instanceof Toolkit) {
-            return toolOrToolkit.getTools() as Tool[];
+        if (hasMethods<Toolkit>(toolOrToolkit, 'getTools')) {
+            return (toolOrToolkit as Toolkit).getTools() as Tool[];
         }
 
         return toolOrToolkit;
