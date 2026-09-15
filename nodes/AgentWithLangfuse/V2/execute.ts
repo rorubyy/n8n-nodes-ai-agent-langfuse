@@ -19,9 +19,10 @@ import { jsonParse, NodeOperationError, sleep } from 'n8n-workflow';
 import type { IExecuteFunctions, INodeExecutionData, ISupplyDataFunctions } from 'n8n-workflow';
 import assert from 'node:assert';
 
-import { CallbackHandler } from 'langfuse-langchain';
+import type { CallbackHandler } from 'langfuse-langchain';
 
 import { getPromptInputByType } from '../src/utils/helpers';
+import { CrossModuleUsageCallbackHandler } from '../src/utils/LangfuseCallbackHandler';
 
 import {
     getOptionalOutputParser,
@@ -312,7 +313,7 @@ export async function toolsAgentExecute(
                 userId: rawMetadata.userId,
             };
 
-            const langfuseHandler = new CallbackHandler({
+            const langfuseHandler = new CrossModuleUsageCallbackHandler({
                 publicKey: langfuseCreds.publicKey as string,
                 secretKey: langfuseCreds.secretKey as string,
                 baseUrl: (langfuseCreds.url as string) ?? process.env.LANGFUSE_HOST,
@@ -364,6 +365,7 @@ export async function toolsAgentExecute(
             // Check if streaming is actually available
             const isStreamingAvailable = 'isStreaming' in this ? this.isStreaming?.() : undefined;
 
+            try {
             if (
                 'isStreaming' in this &&
                 enableStreaming &&
@@ -398,6 +400,18 @@ export async function toolsAgentExecute(
             } else {
                 // Handle regular execution
                 return await executor.invoke(invokeParams, executeOptions);
+            }
+            } finally {
+                // Ensure buffered Langfuse events are sent before this short-lived
+                // node execution ends. LangChain runs callbacks in the background by
+                // default; without an explicit flush/shutdown, a generation that
+                // completed (and was billed by the provider) can be silently dropped
+                // if the execution ends before the SDK's internal batch timer fires.
+                try {
+                    await langfuseHandler.shutdownAsync();
+                } catch (flushError) {
+                    this.logger.warn('Failed to flush Langfuse handler.', { error: flushError });
+                }
             }
         });
 

@@ -20,8 +20,8 @@ import { createAgentSequence } from './createAgentSequence';
 import { finalizeResult } from './finalizeResult';
 import { prepareItemContext } from './prepareItemContext';
 import { runAgent } from './runAgent';
-import { CallbackHandler } from 'langfuse-langchain'; 		// add langfuse handler 
-
+import type { CallbackHandler } from 'langfuse-langchain';
+import { CrossModuleUsageCallbackHandler } from '../../src/utils/LangfuseCallbackHandler';
 
 type BatchResult = AgentResult | EngineRequest<RequestResponseMetadata>;
 
@@ -119,7 +119,7 @@ export async function executeBatch(
 			} else {
 				parsedCustomMetadata = rawMetadata.customMetadata;
 			}
-			langfuseHandler = new CallbackHandler({
+			langfuseHandler = new CrossModuleUsageCallbackHandler({
 				publicKey: langfuseCreds.publicKey as string,
 				secretKey: langfuseCreds.secretKey as string,
 				baseUrl: (langfuseCreds.url as string) ?? process.env.LANGFUSE_HOST,
@@ -143,8 +143,23 @@ export async function executeBatch(
 			fallbackModel);
 
 		// Run the agent with processed response
-		return await runAgent(ctx, executor, itemContext, model, memory, processedResponse, memoryHits, langfuseHandler
-		);
+		try {
+			return await runAgent(ctx, executor, itemContext, model, memory, processedResponse, memoryHits, langfuseHandler
+			);
+		} finally {
+			// Ensure buffered Langfuse events are sent before this short-lived
+			// node execution ends. LangChain runs callbacks in the background by
+			// default; without an explicit flush/shutdown, a generation that
+			// completed (and was billed by the provider) can be silently dropped
+			// if the execution ends before the SDK's internal batch timer fires.
+			if (langfuseHandler) {
+				try {
+					await langfuseHandler.shutdownAsync();
+				} catch (flushError) {
+					ctx.logger.warn('Failed to flush Langfuse handler.', { error: flushError });
+				}
+			}
+		}
 	});
 
 	const batchResults = await Promise.allSettled(batchPromises);
