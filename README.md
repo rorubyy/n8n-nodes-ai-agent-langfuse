@@ -75,10 +75,33 @@ This credential is used to:
 Langfuse Base URL|The base URL of your Langfuse instance|`https://cloud.langfuse.com` or self-hosted URL|
 |Public Key *|Langfuse public key used for tracing authentication|`pk-xxx`|
 Secret Key *|Langfuse secret key used for tracing authentication|`sk-xxx`|
+|Custom Headers (JSON)|Optional JSON object of extra headers sent with every Langfuse request (tracing and credential test)|`{"X-Custom":"value"}`|
 
 > 🔑 How to find your Langfuse keys: <br>
 > Log in to your Langfuse dashboard, then go to: <br>
 > Settings → Projects → [Your Project] to retrieve publicKey and secretKey.
+
+### Custom headers
+Use **Custom Headers (JSON)** when your Langfuse instance sits behind a proxy or gateway that requires extra request headers. The headers are sent with every Langfuse request: trace ingestion and the credential test.
+
+- The value must be a JSON object whose values are all strings.
+- Header names must be valid HTTP header names.
+- `Authorization`, `Content-Type`, `Content-Length` and `Host` are reserved and cannot be overridden (case-insensitive).
+- Leave the field empty if you don't need it. Existing credentials keep working unchanged.
+- If the JSON is invalid, the node fails with a clear error instead of silently running without tracing. Header values are never logged or added to trace metadata.
+
+**Example: Langfuse behind Cloudflare Access (Zero Trust)**
+
+1. In Cloudflare Zero Trust, create a **Service Token** (Access → Service Auth → Service Tokens).
+2. In the Access application protecting Langfuse, add a policy with action **Service Auth** that includes this service token. A regular `Allow` policy redirects to the login page instead of accepting the token.
+3. Put the token in the credential:
+
+```json
+{
+  "CF-Access-Client-Id": "<client-id>.access",
+  "CF-Access-Client-Secret": "<client-secret>"
+}
+```
 
 ### Credential UI Preview
 Once filled out, your credential should look like this:
@@ -148,6 +171,9 @@ Here’s how a single request looks inside Langfuse:
 - [n8n-nodes-langfuse-ai-agent](https://github.com/matanzvili/n8n-nodes-langfuse-ai-agent)
 
 ## Version History
+
+### v0.2.0 (2026-09-22)
+- Added optional **Custom Headers (JSON)** field to the Langfuse credential (e.g. for Cloudflare Access service tokens)
 
 ### v0.1.29 (2026-08-06)
 - Fixed tool schema detection for HITL/tool calls (`instanceof` cross-module issue)

@@ -19,9 +19,10 @@ import { jsonParse, NodeOperationError, sleep } from 'n8n-workflow';
 import type { IExecuteFunctions, INodeExecutionData, ISupplyDataFunctions } from 'n8n-workflow';
 import assert from 'node:assert';
 
-import { CallbackHandler } from 'langfuse-langchain';
+import type { CallbackHandler } from 'langfuse-langchain';
 
 import { getPromptInputByType } from '../src/utils/helpers';
+import { createLangfuseHandler } from '../src/utils/langfuseHandler';
 
 import {
     getOptionalOutputParser,
@@ -312,10 +313,7 @@ export async function toolsAgentExecute(
                 userId: rawMetadata.userId,
             };
 
-            const langfuseHandler = new CallbackHandler({
-                publicKey: langfuseCreds.publicKey as string,
-                secretKey: langfuseCreds.secretKey as string,
-                baseUrl: (langfuseCreds.url as string) ?? process.env.LANGFUSE_HOST,
+            const langfuseHandler = createLangfuseHandler(this.getNode(), langfuseCreds, {
                 sessionId: langfuseMetadata.sessionId,
                 userId: langfuseMetadata.userId,
                 metadata: langfuseMetadata.customMetadata,
