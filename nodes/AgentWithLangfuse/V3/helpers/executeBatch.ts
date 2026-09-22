@@ -20,7 +20,8 @@ import { createAgentSequence } from './createAgentSequence';
 import { finalizeResult } from './finalizeResult';
 import { prepareItemContext } from './prepareItemContext';
 import { runAgent } from './runAgent';
-import { CallbackHandler } from 'langfuse-langchain'; 		// add langfuse handler 
+import type { CallbackHandler } from 'langfuse-langchain'; 		// add langfuse handler 
+import { createLangfuseHandler, LangfuseConfigError } from '../../src/utils/langfuseHandler';
 
 
 type BatchResult = AgentResult | EngineRequest<RequestResponseMetadata>;
@@ -119,15 +120,14 @@ export async function executeBatch(
 			} else {
 				parsedCustomMetadata = rawMetadata.customMetadata;
 			}
-			langfuseHandler = new CallbackHandler({
-				publicKey: langfuseCreds.publicKey as string,
-				secretKey: langfuseCreds.secretKey as string,
-				baseUrl: (langfuseCreds.url as string) ?? process.env.LANGFUSE_HOST,
+			langfuseHandler = createLangfuseHandler(ctx.getNode(), langfuseCreds, {
 				sessionId: rawMetadata.sessionId,
 				userId: rawMetadata.userId,
 				metadata: parsedCustomMetadata,
 			});
 		} catch (e) {
+			// Misconfigured credential (e.g. invalid custom headers) must be visible, not swallowed
+			if (e instanceof LangfuseConfigError) throw e;
 			ctx.logger.warn('Failed to initialize Langfuse handler, continuing without tracing.', { error: e });
 			langfuseHandler = undefined;
 		}
