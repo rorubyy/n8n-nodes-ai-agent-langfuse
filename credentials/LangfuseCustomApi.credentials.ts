@@ -1,9 +1,11 @@
 import {
 	ICredentialType,
 	INodeProperties,
-	IAuthenticateGeneric,
+	IAuthenticate,
 	ICredentialTestRequest,
 } from 'n8n-workflow';
+
+import { parseLangfuseCustomHeaders } from '../nodes/AgentWithLangfuse/src/utils/langfuseHeaders';
 
 export class LangfuseCustomApi implements ICredentialType {
 	name = 'langfuseCustomApi';
@@ -40,16 +42,31 @@ export class LangfuseCustomApi implements ICredentialType {
 			default: '',
 			description: 'Langfuse secret API key (used as password for Basic Auth)',
 		},
+		{
+			displayName: 'Custom Headers (JSON)',
+			name: 'customHeaders',
+			type: 'string',
+			typeOptions: {
+				password: true,
+				rows: 4,
+			},
+			default: '',
+			description:
+				'Optional JSON object of extra headers sent with every Langfuse request, e.g. {"CF-Access-Client-Id":"...","CF-Access-Client-Secret":"..."}',
+		},
 	];
 
-	authenticate: IAuthenticateGeneric = {
-		type: 'generic',
-		properties: {
-			auth: {
-				username: '={{$credentials.publicKey}}',
-				password: '={{$credentials.secretKey}}',
-			},
-		},
+	authenticate: IAuthenticate = async (credentials, requestOptions) => {
+		const customHeaders = parseLangfuseCustomHeaders(credentials.customHeaders);
+		requestOptions.auth = {
+			username: credentials.publicKey as string,
+			password: credentials.secretKey as string,
+		};
+		requestOptions.headers = {
+			...requestOptions.headers,
+			...customHeaders,
+		};
+		return requestOptions;
 	};
 
 	test: ICredentialTestRequest = {
